@@ -57,13 +57,13 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Mantém o log completo mas garante que produto/codigo existam
+        // 🔹 Mantém o log completo (com produto, status, timestamp, etc.)
         dadosCompletos = {
-            'validados': validados.map(l => ({ ...l, produto: l.produto || {} })),
-            'sem-trib': semTrib.map(l => ({ ...l, produto: l.produto || {} })),
-            'desativados': desativados.map(l => ({ ...l, produto: l.produto || {} })),
-            'sem-preco': semPreco.map(l => ({ ...l, produto: l.produto || {} })),
-            'nao-cadastrados': naoCadastrados.map(l => ({ ...l, codigo: l.codigo || '' }))
+            'validados': validados,
+            'sem-trib': semTrib,
+            'desativados': desativados,
+            'sem-preco': semPreco,
+            'nao-cadastrados': naoCadastrados
         };
 
         dadosCarregados = true;
@@ -83,22 +83,23 @@ async function carregarDadosAPI() {
                       dadosCompletos['nao-cadastrados'].length;
         document.getElementById("total-count").textContent = total;
 
+        // 🔹 Atualiza os contadores das abas (tab headers)
+        document.querySelector('[data-tab="validados"] .tab-count').textContent = `(${dadosCompletos['validados'].length})`;
+        document.querySelector('[data-tab="sem-trib"] .tab-count').textContent = `(${dadosCompletos['sem-trib'].length})`;
+        document.querySelector('[data-tab="desativados"] .tab-count').textContent = `(${dadosCompletos['desativados'].length})`;
+        document.querySelector('[data-tab="sem-preco"] .tab-count').textContent = `(${dadosCompletos['sem-preco'].length})`;
+        document.querySelector('[data-tab="nao-cadastrados"] .tab-count').textContent = `(${dadosCompletos['nao-cadastrados'].length})`;
+
         // 🔹 Recarregar a aba ativa
         const abaAtiva = document.querySelector('.tab-button.active')?.getAttribute('data-tab') || 'validados';
         carregarDadosTabela(abaAtiva);
 
         console.log('✅ Dados reais carregados e exibidos');
-        
-        // 🔹 Validação: mostra um exemplo no console
-        console.log("Exemplo de log validado:", dadosCompletos.validados[0]);
-        console.log("Exemplo de log desativado:", dadosCompletos.desativados[0]);
-        console.log("Exemplo de não cadastrado:", dadosCompletos['nao-cadastrados'][0]);
 
     } catch (error) {
         console.error('❌ Erro ao carregar dados da API:', error);
     }
 }
-
 
 // Inicializar sistema de abas
 function inicializarAbas() {
@@ -447,26 +448,7 @@ function criarHTMLImpressao(titulo, dados, tabId) {
             border-top: 1px solid #ccc;
             padding-top: 10px;
         }
-        
-        .col-codigo { width: 6%; }
-        .col-barras { width: 12%; }
-        .col-tipo { width: 7%; }
-        .col-desc { width: 25%; }
-        .col-ncm { width: 7%; }
-        .col-preco { width: 7%; }
-        .col-estoque { width: 6%; }
-        .col-emb { width: 4%; }
-        .col-ativo { width: 5%; }
-        .col-trib { width: 5%; }
-        .col-icms { width: 7%; }
-        .col-status { width: 9%; }
-
-        .col-barras-full { width: 100%; }
-        
-        @media print {
-            body { margin: 10mm; }
-            .no-print { display: none; }
-        }
+        .col-status { width: 10%; }
     </style>
 </head>
 <body>
@@ -480,56 +462,55 @@ function criarHTMLImpressao(titulo, dados, tabId) {
     if (tabId === 'nao-cadastrados') {
         html += `
         <thead>
-            <tr><th class="col-barras-full">Código de Barras Não Cadastrado</th></tr>
+            <tr><th>Código de Barras Não Cadastrado</th></tr>
         </thead>
         <tbody>`;
         
-        dados.forEach(codigo => {
-            html += `<tr><td class="col-barras-full">${codigo}</td></tr>`;
+        dados.forEach(log => {
+            html += `<tr><td>${log.codigo || ''}</td></tr>`;
         });
     } else {
         html += `
         <thead>
             <tr>
-                <th class="col-codigo">Código</th>
-                <th class="col-barras">Cód. Barras</th>
-                <th class="col-tipo">Tipo</th>
-                <th class="col-desc">Descrição</th>
-                <th class="col-ncm">NCM</th>
-                <th class="col-preco">Preço</th>
-                <th class="col-estoque">Estoque</th>
-                <th class="col-emb">Emb</th>
-                <th class="col-ativo">Ativo</th>
-                <th class="col-trib">Cód.Trib</th>
-                <th class="col-icms">ICMS</th>
-                <th class="col-icms">Pis/Cofins</th>
-                <th class="col-status">Status / Data</th>
+                <th>Código</th>
+                <th>Cód. Barras</th>
+                <th>Tipo Código</th>
+                <th>Descrição</th>
+                <th>NCM</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Emb</th>
+                <th>Ativo</th>
+                <th>Cód. Trib</th>
+                <th>ICMS</th>
+                <th>Pis/Cofins</th>
+                <th>Status / Data</th>
             </tr>
         </thead>
         <tbody>`;
-        
-        dados.forEach(log => {
-            const p = log.produto ? log.produto : log;
 
-            const preco = parseFloat(p.PrVenda || 0).toFixed(2);
-            const estoque = parseFloat(p.Estoque || 0).toFixed(1);
+        dados.forEach(log => {
+            const p = log.produto || {};
+            const preco = parseFloat(p.preco_venda || 0).toFixed(2);
+            const estoque = parseFloat(p.estoque || 0).toFixed(1);
 
             html += `
             <tr>
-                <td class="col-codigo">${p.Codigo || ''}</td>
-                <td class="col-barras">${p.CodBarras || log.codigo || ''}</td>
-                <td class="col-tipo">${p.TipoCodigo || ''}</td>
-                <td class="col-desc">${p.Descricao || ''}</td>
-                <td class="col-ncm">${p.NCM || ''}</td>
-                <td class="col-preco">R$ ${preco}</td>
-                <td class="col-estoque">${estoque}</td>
-                <td class="col-emb">${p.Emb || ''}</td>
-                <td class="col-ativo">${p.Ativo || ''}</td>
-                <td class="col-trib">${p.CodTrib || ''}</td>
-                <td class="col-icms">${p.ICMS || ''}</td>
-                <td class="col-icms">${p.PisCofins || ''}</td>
-                <td class="col-status">
-                    ${(log.status || '')}<br>
+                <td>${p.codigo_interno || ''}</td>
+                <td>${p.codigo_barras || log.codigo || ''}</td>
+                <td>${p.tipo_codigo || ''}</td>
+                <td>${p.descricao || ''}</td>
+                <td>${p.ncm || ''}</td>
+                <td>R$ ${preco}</td>
+                <td>${estoque}</td>
+                <td>${p.unidade_venda || ''}</td>
+                <td>${p.produto_ativo || ''}</td>
+                <td>${p.cod_tributacao || ''}</td>
+                <td>${p.tributacao_icms || ''}</td>
+                <td>${p.tributacao_piscofins || ''}</td>
+                <td>
+                    ${log.status || ''}<br>
                     <small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small>
                 </td>
             </tr>`;
