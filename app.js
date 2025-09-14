@@ -43,10 +43,12 @@ function carregarDadosIniciais() {
     carregarDadosAPI();      // busca diretamente da API
 }
 
+// Tentar carregar dados reais da API
 async function carregarDadosAPI() {
     try {
         console.log('Tentando carregar dados da API...');
 
+        // 🔹 Carrega todas as rotas em paralelo já usando o domínio HTTPS
         const [validados, semTrib, desativados, semPreco, naoCadastrados] = await Promise.all([
             fetch(`${API_BASE}/logs/validados`).then(r => r.json()),
             fetch(`${API_BASE}/logs/sem-tributacao`).then(r => r.json()),
@@ -55,43 +57,25 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Normaliza: sempre cria { produto, status, timestamp }
-        function normalizar(lista, statusPadrao) {
-            return lista.map(l => {
-                if (l.produto) {
-                    return {
-                        produto: l.produto,
-                        status: l.status || statusPadrao,
-                        timestamp: l.timestamp || null
-                    };
-                } else {
-                    // caso o backend mande o produto direto
-                    return {
-                        produto: l,
-                        status: statusPadrao,
-                        timestamp: null
-                    };
-                }
-            });
-        }
-
+        // 🔹 Mantém o log completo mas garante que produto/codigo existam
         dadosCompletos = {
-            'validados': normalizar(validados, 'validado'),
-            'sem-trib': normalizar(semTrib, 'sem tributação'),
-            'desativados': normalizar(desativados, 'desativado'),
-            'sem-preco': normalizar(semPreco, 'sem preço'),
-            'nao-cadastrados': naoCadastrados.map(l => l.codigo || l)
+            'validados': validados.map(l => ({ ...l, produto: l.produto || {} })),
+            'sem-trib': semTrib.map(l => ({ ...l, produto: l.produto || {} })),
+            'desativados': desativados.map(l => ({ ...l, produto: l.produto || {} })),
+            'sem-preco': semPreco.map(l => ({ ...l, produto: l.produto || {} })),
+            'nao-cadastrados': naoCadastrados.map(l => ({ ...l, codigo: l.codigo || '' }))
         };
 
         dadosCarregados = true;
 
-        // Atualiza os contadores
+        // 🔹 Atualiza os contadores do Dashboard Geral
         document.getElementById("validados-count").textContent = dadosCompletos['validados'].length;
         document.getElementById("sem-trib-count").textContent = dadosCompletos['sem-trib'].length;
         document.getElementById("desativados-count").textContent = dadosCompletos['desativados'].length;
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
+        // Total
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
@@ -99,11 +83,16 @@ async function carregarDadosAPI() {
                       dadosCompletos['nao-cadastrados'].length;
         document.getElementById("total-count").textContent = total;
 
-        // Recarrega aba ativa
+        // 🔹 Recarregar a aba ativa
         const abaAtiva = document.querySelector('.tab-button.active')?.getAttribute('data-tab') || 'validados';
         carregarDadosTabela(abaAtiva);
 
         console.log('✅ Dados reais carregados e exibidos');
+        
+        // 🔹 Validação: mostra um exemplo no console
+        console.log("Exemplo de log validado:", dadosCompletos.validados[0]);
+        console.log("Exemplo de log desativado:", dadosCompletos.desativados[0]);
+        console.log("Exemplo de não cadastrado:", dadosCompletos['nao-cadastrados'][0]);
 
     } catch (error) {
         console.error('❌ Erro ao carregar dados da API:', error);
