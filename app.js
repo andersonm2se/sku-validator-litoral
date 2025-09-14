@@ -1,4 +1,4 @@
-// Dados da aplicação
+// Dados da aplicaçã
 let dadosCompletos = {};
 let dadosCarregados = false;
 let paginaAtual = {
