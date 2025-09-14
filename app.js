@@ -119,26 +119,51 @@ function carregarDadosIniciais() {
 async function carregarDadosAPI() {
     try {
         console.log('Tentando carregar dados da API...');
-        const response = await fetch('/dados_produtos.json');
-        
-        if (response.ok) {
-            const dados = await response.json();
-            console.log('Dados da API carregados com sucesso');
-            
-            dadosCompletos = {
-                'validados': dados.dados_completos.Log_Validados || dadosCompletos.validados,
-                'sem-trib': dados.dados_completos.Log_SemTrib || dadosCompletos['sem-trib'],
-                'desativados': dados.dados_completos.Log_Desativados || dadosCompletos.desativados,
-                'sem-preco': dados.dados_completos.Log_Sem_PrVenda || dadosCompletos['sem-preco'],
-                'nao-cadastrados': naoCadastrados
-            };
-            
-            // Recarregar aba ativa
-            const abaAtiva = document.querySelector('.tab-button.active')?.getAttribute('data-tab') || 'validados';
-            carregarDadosTabela(abaAtiva);
-        }
+
+        // 🔹 Carrega todas as rotas em paralelo
+        const [validados, semTrib, desativados, semPreco, naoCadastrados] = await Promise.all([
+            fetch('http://65.109.133.33:3071/logs/validados').then(r => r.json()),
+            fetch('http://65.109.133.33:3071/logs/sem-tributacao').then(r => r.json()),
+            fetch('http://65.109.133.33:3071/logs/desativados').then(r => r.json()),
+            fetch('http://65.109.133.33:3071/logs/sem-prvenda').then(r => r.json()),
+            fetch('http://65.109.133.33:3071/logs/sem-cadastro').then(r => r.json())
+        ]);
+
+        // 🔹 Ajusta para o formato esperado pelas tabelas
+        dadosCompletos = {
+            'validados': validados.map(l => l.produto || {}),
+            'sem-trib': semTrib.map(l => l.produto || {}),
+            'desativados': desativados.map(l => l.produto || {}),
+            'sem-preco': semPreco.map(l => l.produto || {}),
+            'nao-cadastrados': naoCadastrados.map(l => l.codigo || '')
+        };
+
+        dadosCarregados = true;
+
+        // 🔹 Atualiza os contadores do Dashboard Geral
+        document.getElementById("validados-count").textContent = dadosCompletos['validados'].length;
+        document.getElementById("sem-trib-count").textContent = dadosCompletos['sem-trib'].length;
+        document.getElementById("desativados-count").textContent = dadosCompletos['desativados'].length;
+        document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
+        document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
+
+        // Total
+        const total = dadosCompletos['validados'].length +
+                      dadosCompletos['sem-trib'].length +
+                      dadosCompletos['desativados'].length +
+                      dadosCompletos['sem-preco'].length +
+                      dadosCompletos['nao-cadastrados'].length;
+        document.getElementById("total-count").textContent = total;
+
+        // 🔹 Recarregar a aba ativa
+        const abaAtiva = document.querySelector('.tab-button.active')?.getAttribute('data-tab') || 'validados';
+        carregarDadosTabela(abaAtiva);
+
+        console.log('✅ Dados reais carregados e exibidos');
+
     } catch (error) {
-        console.log('Usando dados fallback - API não disponível');
+        console.error('❌ Erro ao carregar dados da API:', error);
+        console.log('Mantendo dados de fallback...');
     }
 }
 
