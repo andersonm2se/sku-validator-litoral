@@ -687,6 +687,19 @@ select.form-control {
     max-width: 220px;
     height: auto;
 }
+.nt-logo-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 8px;
+    gap: 4px;
+}
+.nt-logo {
+    height: 38px;         /* ajuste a altura como preferir */
+    width: auto;
+    margin-bottom: 0;
+    display: block;
+}
 .dashboard {
     margin-bottom: var(--space-32);
 }
