@@ -120,13 +120,13 @@ async function carregarDadosAPI() {
     try {
         console.log('Tentando carregar dados da API...');
 
-        // 🔹 Carrega todas as rotas em paralelo
+        // 🔹 Carrega todas as rotas em paralelo já usando o domínio HTTPS
         const [validados, semTrib, desativados, semPreco, naoCadastrados] = await Promise.all([
-            fetch('http://65.109.133.33:3071/logs/validados').then(r => r.json()),
-            fetch('http://65.109.133.33:3071/logs/sem-tributacao').then(r => r.json()),
-            fetch('http://65.109.133.33:3071/logs/desativados').then(r => r.json()),
-            fetch('http://65.109.133.33:3071/logs/sem-prvenda').then(r => r.json()),
-            fetch('http://65.109.133.33:3071/logs/sem-cadastro').then(r => r.json())
+            fetch(`${API_BASE}/logs/validados`).then(r => r.json()),
+            fetch(`${API_BASE}/logs/sem-tributacao`).then(r => r.json()),
+            fetch(`${API_BASE}/logs/desativados`).then(r => r.json()),
+            fetch(`${API_BASE}/logs/sem-prvenda`).then(r => r.json()),
+            fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
         // 🔹 Ajusta para o formato esperado pelas tabelas
