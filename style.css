@@ -32,14 +32,14 @@
   --color-orange-500-rgb: 168, 75, 47;
   --color-orange-400-rgb: 230, 129, 97;
   /* Background color tokens (Light Mode) */
-  --color-bg-1: rgba(59, 130, 246, 0.08); /* Light blue */
-  --color-bg-2: rgba(245, 158, 11, 0.08); /* Light yellow */
-  --color-bg-3: rgba(34, 197, 94, 0.08); /* Light green */
-  --color-bg-4: rgba(239, 68, 68, 0.08); /* Light red */
-  --color-bg-5: rgba(147, 51, 234, 0.08); /* Light purple */
-  --color-bg-6: rgba(249, 115, 22, 0.08); /* Light orange */
-  --color-bg-7: rgba(236, 72, 153, 0.08); /* Light pink */
-  --color-bg-8: rgba(6, 182, 212, 0.08); /* Light cyan */
+ --color-bg-1: #EDF2F9; /* Azul (Total de Registros) */
+ --color-bg-2: #FBF4E7; /* Amarelo (Sem Tributação) */
+ --color-bg-3: #EBF8EC; /* Verde (Validados) */
+ --color-bg-4: #FBEDEA; /* Vermelho (Desativados) */
+ --color-bg-5: #F3ECF8; /* Roxo (Sem Preço de Venda) */
+ --color-bg-6: #FCF1E7; /* Laranja (Não Cadastrados) */
+ --color-bg-7: #FBEFF3; /* Rosa */
+ --color-bg-8: #E6F6F8; /* Ciano */
   /* Semantic Color Tokens (Light Mode) */
   --color-background: var(--color-cream-50);
   --color-surface: var(--color-cream-100);
