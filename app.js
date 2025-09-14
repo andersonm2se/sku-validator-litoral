@@ -29,93 +29,18 @@ document.addEventListener('DOMContentLoaded', function() {
 // Carregar dados iniciais (fallback primeiro, depois tentar API)
 function carregarDadosIniciais() {
     console.log('Carregando dados iniciais...');
-    
-    // 🔹 Ajusta para o formato esperado (mantém log completo!)
+
+    // 🔹 Inicializa com arrays vazios
     dadosCompletos = {
-    'validados': validados,
-    'sem-trib': semTrib,
-    'desativados': desativados,
-    'sem-preco': semPreco,
-    'nao-cadastrados': naoCadastrados
+        'validados': [],
+        'sem-trib': [],
+        'desativados': [],
+        'sem-preco': [],
+        'nao-cadastrados': []
     };
-    
-    // Gerar dados de exemplo para cada categoria
-    for (let i = 1; i <= 25; i++) {
-        dadosCompletos.validados.push({
-            "Codigo": 1000000 + i,
-            "CodBarras": `789629207005${i}`,
-            "TipoCodigo": "Principal",
-            "Descricao": `Produto Validado ${i} - Descrição do produto`,
-            "NCM": "19053100",
-            "PrVenda": (Math.random() * 50).toFixed(2),
-            "Estoque": Math.floor(Math.random() * 100),
-            "Emb": "UN",
-            "Ativo": "Sim",
-            "CodTrib": "1921",
-            "ICMS": "Substituição Tributária",
-            "PisCofins": "Tributado"
-        });
-    }
-    
-    for (let i = 1; i <= 8; i++) {
-        dadosCompletos['sem-trib'].push({
-            "Codigo": 2000000 + i,
-            "CodBarras": `789602063254${i}`,
-            "TipoCodigo": "Principal", 
-            "Descricao": `Produto Sem Tributação ${i}`,
-            "NCM": "16025000",
-            "PrVenda": (Math.random() * 40).toFixed(2),
-            "Estoque": Math.floor(Math.random() * 50),
-            "Emb": "UN",
-            "Ativo": "Sim",
-            "CodTrib": "999",
-            "ICMS": "",
-            "PisCofins": ""
-        });
-    }
-    
-    for (let i = 1; i <= 30; i++) {
-        dadosCompletos.desativados.push({
-            "Codigo": 3000000 + i,
-            "CodBarras": `789602063101${i}`,
-            "TipoCodigo": "Principal",
-            "Descricao": `Produto Desativado ${i}`,
-            "NCM": "73239900",
-            "PrVenda": (Math.random() * 30).toFixed(2),
-            "Estoque": 0,
-            "Emb": "UN", 
-            "Ativo": "Não",
-            "CodTrib": "999",
-            "ICMS": "",
-            "PisCofins": ""
-        });
-    }
-    
-    for (let i = 1; i <= 5; i++) {
-        dadosCompletos['sem-preco'].push({
-            "Codigo": 4000000 + i,
-            "CodBarras": `000000100627${i}`,
-            "TipoCodigo": "Principal",
-            "Descricao": `Produto Sem Preço ${i}`,
-            "NCM": "33059000",
-            "PrVenda": 0.0,
-            "Estoque": 0,
-            "Emb": "UN",
-            "Ativo": "Sim",
-            "CodTrib": "3316",
-            "ICMS": "Tributado 20%",
-            "PisCofins": "Não Tributado"
-        });
-    }
-    
-    dadosCarregados = true;
-    console.log('Dados carregados:', dadosCompletos);
-    
-    // Carregar primeira aba
-    carregarDadosTabela('validados');
-    
-    // Tentar carregar dados reais da API
-    carregarDadosAPI();
+
+    dadosCarregados = false; // ainda não carregou nada
+    carregarDadosAPI();      // busca diretamente da API
 }
 
 // Tentar carregar dados reais da API
@@ -132,7 +57,7 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Mantém os LOGS completos (produto + status + timestamp)
+        // 🔹 Mantém o log completo (com produto, status, timestamp, etc.)
         dadosCompletos = {
             'validados': validados,
             'sem-trib': semTrib,
@@ -150,7 +75,7 @@ async function carregarDadosAPI() {
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
-        // 🔹 Atualiza o total geral
+        // Total
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
@@ -166,7 +91,6 @@ async function carregarDadosAPI() {
 
     } catch (error) {
         console.error('❌ Erro ao carregar dados da API:', error);
-        console.log('Mantendo dados de fallback...');
     }
 }
 
@@ -319,18 +243,22 @@ function preencherTabelaProdutos(tbody, dados) {
 
 // Preencher tabela de não cadastrados
 function preencherTabelaNaoCadastrados(tbody, dados) {
-    console.log('Preenchendo tabela de não cadastrados com', dados.length, 'códigos');
+    console.log('Preenchendo tabela de não cadastrados com', dados.length, 'logs');
     
     if (dados.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td style="text-align: center; padding: 20px;">Nenhum código encontrado</td>';
+        tr.innerHTML = '<td colspan="3" style="text-align: center; padding: 20px;">Nenhum código encontrado</td>';
         tbody.appendChild(tr);
         return;
     }
-    
-    dados.forEach(codigo => {
+
+    dados.forEach(log => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${codigo}</td>`;
+        tr.innerHTML = `
+            <td>${log.codigo || ''}</td>
+            <td>${log.status || ''}</td>
+            <td><small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small></td>
+        `;
         tbody.appendChild(tr);
     });
 }
@@ -452,7 +380,6 @@ window.imprimirLista = function(tabId) {
 };
 
 // Criar HTML para impressão
-// Criar HTML para impressão
 function criarHTMLImpressao(titulo, dados, tabId) {
     const agora = new Date().toLocaleString('pt-BR');
     
@@ -462,156 +389,99 @@ function criarHTMLImpressao(titulo, dados, tabId) {
     <meta charset="UTF-8">
     <title>${titulo} - Impressão</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            font-size: 11px; 
-            line-height: 1.3;
-            margin: 15mm;
-            background: white;
-            color: black;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-        }
-        .header h1 { 
-            font-size: 18px; 
-            margin-bottom: 8px; 
-            color: #333;
-        }
-        .header .info { 
-            font-size: 10px; 
-            color: #666; 
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0;
-        }
-        th, td { 
-            border: 1px solid #999; 
-            padding: 6px 4px; 
-            text-align: left;
-            font-size: 9px;
-            vertical-align: top;
-        }
-        th { 
-            background: #f5f5f5; 
-            font-weight: bold;
-            color: #333;
-        }
+        body { font-family: Arial, sans-serif; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #999; padding: 6px 4px; text-align: left; font-size: 9px; }
+        th { background: #f5f5f5; }
         tr:nth-child(even) { background: #fafafa; }
-        .footer { 
-            text-align: center; 
-            margin-top: 30px; 
-            font-size: 9px; 
-            color: #666;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-        }
-        
-        /* Larguras específicas das colunas */
-        .col-codigo { width: 6%; }
-        .col-barras { width: 12%; }
-        .col-tipo { width: 7%; }
-        .col-desc { width: 25%; }
-        .col-ncm { width: 7%; }
-        .col-preco { width: 7%; }
-        .col-estoque { width: 6%; }
-        .col-emb { width: 4%; }
-        .col-ativo { width: 5%; }
-        .col-trib { width: 5%; }
-        .col-icms { width: 7%; }
-        .col-status { width: 9%; }
-
-        .col-barras-full { width: 100%; }
-        
-        @media print {
-            body { margin: 10mm; }
-            .no-print { display: none; }
-        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>${titulo}</h1>
-        <div class="info">Relatório gerado em: ${agora}</div>
-    </div>
-    
+    <h1>${titulo}</h1>
+    <div style="font-size:10px; color:#666;">Gerado em: ${agora}</div>
     <table>`;
-    
+
     if (tabId === 'nao-cadastrados') {
         html += `
         <thead>
-            <tr><th class="col-barras-full">Código de Barras Não Cadastrado</th></tr>
+            <tr>
+                <th>Código</th>
+                <th>Status</th>
+                <th>Data</th>
+            </tr>
         </thead>
         <tbody>`;
-        
-        dados.forEach(codigo => {
-            html += `<tr><td class="col-barras-full">${codigo}</td></tr>`;
+
+        dados.forEach(log => {
+            html += `
+            <tr>
+                <td>${log.codigo || ''}</td>
+                <td>${log.status || ''}</td>
+                <td><small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small></td>
+            </tr>`;
         });
+
     } else {
         html += `
         <thead>
             <tr>
-                <th class="col-codigo">Código</th>
-                <th class="col-barras">Cód. Barras</th>
-                <th class="col-tipo">Tipo</th>
-                <th class="col-desc">Descrição</th>
-                <th class="col-ncm">NCM</th>
-                <th class="col-preco">Preço</th>
-                <th class="col-estoque">Estoque</th>
-                <th class="col-emb">Emb</th>
-                <th class="col-ativo">Ativo</th>
-                <th class="col-trib">Cód.Trib</th>
-                <th class="col-icms">ICMS</th>
-                <th class="col-icms">Pis/Cofins</th>
-                <th class="col-status">Status / Data</th>
+                <th>Código</th>
+                <th>Cód. Barras</th>
+                <th>Tipo</th>
+                <th>Descrição</th>
+                <th>NCM</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Emb</th>
+                <th>Ativo</th>
+                <th>Cód.Trib</th>
+                <th>ICMS</th>
+                <th>Pis/Cofins</th>
+                <th>Status / Data</th>
             </tr>
         </thead>
         <tbody>`;
-        
+
         dados.forEach(item => {
-            const preco = typeof item.PrVenda === 'number' ? 
-                item.PrVenda.toFixed(2) : 
-                (typeof item.PrVenda === 'string' ? parseFloat(item.PrVenda || 0).toFixed(2) : '0,00');
-            const estoque = typeof item.Estoque === 'number' ? item.Estoque.toFixed(1) : '0,0';
-            
+            const p = item.produto || {};
+            const preco = typeof p.PrVenda === 'number'
+                ? p.PrVenda.toFixed(2)
+                : (p.PrVenda ? parseFloat(p.PrVenda).toFixed(2) : '0,00');
+            const estoque = typeof p.Estoque === 'number'
+                ? p.Estoque.toFixed(1)
+                : (p.Estoque ? parseFloat(p.Estoque).toFixed(1) : '0,0');
+
             html += `
             <tr>
-                <td class="col-codigo">${item.Codigo || ''}</td>
-                <td class="col-barras">${item.CodBarras || ''}</td>
-                <td class="col-tipo">${item.TipoCodigo || ''}</td>
-                <td class="col-desc">${item.Descricao || ''}</td>
-                <td class="col-ncm">${item.NCM || ''}</td>
-                <td class="col-preco">R$ ${preco}</td>
-                <td class="col-estoque">${estoque}</td>
-                <td class="col-emb">${item.Emb || ''}</td>
-                <td class="col-ativo">${item.Ativo || ''}</td>
-                <td class="col-trib">${item.CodTrib || ''}</td>
-                <td class="col-icms">${item.ICMS || ''}</td>
-                <td class="col-icms">${item.PisCofins || ''}</td>
-                <td class="col-status">
-                    ${(item.status || '')}<br>
+                <td>${p.Codigo || ''}</td>
+                <td>${p.CodBarras || item.codigo || ''}</td>
+                <td>${p.TipoCodigo || ''}</td>
+                <td>${p.Descricao || ''}</td>
+                <td>${p.NCM || ''}</td>
+                <td>R$ ${preco}</td>
+                <td>${estoque}</td>
+                <td>${p.Emb || ''}</td>
+                <td>${p.Ativo || ''}</td>
+                <td>${p.CodTrib || ''}</td>
+                <td>${p.ICMS || ''}</td>
+                <td>${p.PisCofins || ''}</td>
+                <td>
+                    ${item.status || ''}<br>
                     <small>${item.timestamp ? new Date(item.timestamp).toLocaleString('pt-BR') : ''}</small>
                 </td>
             </tr>`;
         });
     }
-    
+
     html += `
         </tbody>
     </table>
-    
-    <div class="footer">
-        Total de registros: ${dados.length} | Gerado pelo Sistema de Gerenciamento de Produtos
+    <div style="font-size:10px; color:#666; margin-top:10px;">
+        Total de registros: ${dados.length}
     </div>
 </body>
 </html>`;
-    
+
     return html;
 }
 
