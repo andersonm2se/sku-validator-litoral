@@ -57,13 +57,29 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Mantém o log completo (produto + status + timestamp, etc.)
+        // 🔹 Garante que todos venham no formato { produto, status, timestamp }
         dadosCompletos = {
-            'validados': validados,
-            'sem-trib': semTrib,
-            'desativados': desativados,
-            'sem-preco': semPreco,
-            'nao-cadastrados': naoCadastrados
+            'validados': validados.map(l => ({
+                produto: l.produto || l, 
+                status: l.status || 'validado', 
+                timestamp: l.timestamp || null
+            })),
+            'sem-trib': semTrib.map(l => ({
+                produto: l.produto || l, 
+                status: l.status || 'sem-trib', 
+                timestamp: l.timestamp || null
+            })),
+            'desativados': desativados.map(l => ({
+                produto: l.produto || l, 
+                status: l.status || 'desativado', 
+                timestamp: l.timestamp || null
+            })),
+            'sem-preco': semPreco.map(l => ({
+                produto: l.produto || l, 
+                status: l.status || 'sem-preco', 
+                timestamp: l.timestamp || null
+            })),
+            'nao-cadastrados': naoCadastrados.map(l => l.codigo || l)
         };
 
         // 🔹 Debug: mostra amostras da estrutura recebida
