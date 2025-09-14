@@ -57,7 +57,7 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Mantém o log completo (com produto, status, timestamp, etc.)
+        // 🔹 Mantém o log completo (produto + status + timestamp, etc.)
         dadosCompletos = {
             'validados': validados,
             'sem-trib': semTrib,
@@ -65,6 +65,15 @@ async function carregarDadosAPI() {
             'sem-preco': semPreco,
             'nao-cadastrados': naoCadastrados
         };
+
+        // 🔹 Debug: mostra amostras da estrutura recebida
+        console.log("📦 Estrutura recebida da API:", {
+            validados: dadosCompletos['validados'].slice(0, 2),
+            semTrib: dadosCompletos['sem-trib'].slice(0, 2),
+            desativados: dadosCompletos['desativados'].slice(0, 2),
+            semPreco: dadosCompletos['sem-preco'].slice(0, 2),
+            naoCadastrados: dadosCompletos['nao-cadastrados'].slice(0, 2),
+        });
 
         dadosCarregados = true;
 
@@ -75,14 +84,7 @@ async function carregarDadosAPI() {
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
-        // 🔹 Atualiza os contadores do Sistema de Abas
-        document.getElementById("validados-tab-count").textContent = `(${dadosCompletos['validados'].length})`;
-        document.getElementById("sem-trib-tab-count").textContent = `(${dadosCompletos['sem-trib'].length})`;
-        document.getElementById("desativados-tab-count").textContent = `(${dadosCompletos['desativados'].length})`;
-        document.getElementById("sem-preco-tab-count").textContent = `(${dadosCompletos['sem-preco'].length})`;
-        document.getElementById("nao-cadastrados-tab-count").textContent = `(${dadosCompletos['nao-cadastrados'].length})`;
-
-        // 🔹 Total
+        // Total
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
@@ -95,7 +97,6 @@ async function carregarDadosAPI() {
         carregarDadosTabela(abaAtiva);
 
         console.log('✅ Dados reais carregados e exibidos');
-
     } catch (error) {
         console.error('❌ Erro ao carregar dados da API:', error);
     }
@@ -215,16 +216,18 @@ function carregarDadosTabela(tabId) {
 // Preencher tabela de produtos normais
 function preencherTabelaProdutos(tbody, dados) {
     console.log('Preenchendo tabela de produtos com', dados.length, 'itens');
-    
+
     if (dados.length === 0) {
         const tr = document.createElement('tr');
         tr.innerHTML = '<td colspan="13" style="text-align: center; padding: 20px;">Nenhum produto encontrado</td>';
         tbody.appendChild(tr);
         return;
     }
-    
+
     dados.forEach(log => {
-        const p = log.produto || {}; // 🔹 produto vem dentro do log
+        // 🔹 Se vier no formato { produto: {...}, status, timestamp }
+        const p = log.produto ? log.produto : log;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.Codigo || ''}</td>
@@ -389,92 +392,147 @@ window.imprimirLista = function(tabId) {
 // Criar HTML para impressão
 function criarHTMLImpressao(titulo, dados, tabId) {
     const agora = new Date().toLocaleString('pt-BR');
-    
+
     let html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <title>${titulo} - Impressão</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #999; padding: 6px 4px; text-align: left; font-size: 9px; }
-        th { background: #f5f5f5; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 11px; 
+            line-height: 1.3;
+            margin: 15mm;
+            background: white;
+            color: black;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+        .header h1 { 
+            font-size: 18px; 
+            margin-bottom: 8px; 
+            color: #333;
+        }
+        .header .info { 
+            font-size: 10px; 
+            color: #666; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0;
+        }
+        th, td { 
+            border: 1px solid #999; 
+            padding: 6px 4px; 
+            text-align: left;
+            font-size: 9px;
+            vertical-align: top;
+        }
+        th { 
+            background: #f5f5f5; 
+            font-weight: bold;
+            color: #333;
+        }
         tr:nth-child(even) { background: #fafafa; }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 9px; 
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        
+        .col-codigo { width: 6%; }
+        .col-barras { width: 12%; }
+        .col-tipo { width: 7%; }
+        .col-desc { width: 25%; }
+        .col-ncm { width: 7%; }
+        .col-preco { width: 7%; }
+        .col-estoque { width: 6%; }
+        .col-emb { width: 4%; }
+        .col-ativo { width: 5%; }
+        .col-trib { width: 5%; }
+        .col-icms { width: 7%; }
+        .col-status { width: 9%; }
+
+        .col-barras-full { width: 100%; }
+        
+        @media print {
+            body { margin: 10mm; }
+            .no-print { display: none; }
+        }
     </style>
 </head>
 <body>
-    <h1>${titulo}</h1>
-    <div style="font-size:10px; color:#666;">Gerado em: ${agora}</div>
+    <div class="header">
+        <h1>${titulo}</h1>
+        <div class="info">Relatório gerado em: ${agora}</div>
+    </div>
+    
     <table>`;
 
     if (tabId === 'nao-cadastrados') {
         html += `
         <thead>
-            <tr>
-                <th>Código</th>
-                <th>Status</th>
-                <th>Data</th>
-            </tr>
+            <tr><th class="col-barras-full">Código de Barras Não Cadastrado</th></tr>
         </thead>
         <tbody>`;
-
-        dados.forEach(log => {
-            html += `
-            <tr>
-                <td>${log.codigo || ''}</td>
-                <td>${log.status || ''}</td>
-                <td><small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small></td>
-            </tr>`;
+        
+        dados.forEach(codigo => {
+            html += `<tr><td class="col-barras-full">${codigo}</td></tr>`;
         });
-
     } else {
         html += `
         <thead>
             <tr>
-                <th>Código</th>
-                <th>Cód. Barras</th>
-                <th>Tipo</th>
-                <th>Descrição</th>
-                <th>NCM</th>
-                <th>Preço</th>
-                <th>Estoque</th>
-                <th>Emb</th>
-                <th>Ativo</th>
-                <th>Cód.Trib</th>
-                <th>ICMS</th>
-                <th>Pis/Cofins</th>
-                <th>Status / Data</th>
+                <th class="col-codigo">Código</th>
+                <th class="col-barras">Cód. Barras</th>
+                <th class="col-tipo">Tipo</th>
+                <th class="col-desc">Descrição</th>
+                <th class="col-ncm">NCM</th>
+                <th class="col-preco">Preço</th>
+                <th class="col-estoque">Estoque</th>
+                <th class="col-emb">Emb</th>
+                <th class="col-ativo">Ativo</th>
+                <th class="col-trib">Cód.Trib</th>
+                <th class="col-icms">ICMS</th>
+                <th class="col-icms">Pis/Cofins</th>
+                <th class="col-status">Status / Data</th>
             </tr>
         </thead>
         <tbody>`;
+        
+        dados.forEach(log => {
+            const p = log.produto ? log.produto : log;
 
-        dados.forEach(item => {
-            const p = item.produto || {};
-            const preco = typeof p.PrVenda === 'number'
-                ? p.PrVenda.toFixed(2)
-                : (p.PrVenda ? parseFloat(p.PrVenda).toFixed(2) : '0,00');
-            const estoque = typeof p.Estoque === 'number'
-                ? p.Estoque.toFixed(1)
-                : (p.Estoque ? parseFloat(p.Estoque).toFixed(1) : '0,0');
+            const preco = parseFloat(p.PrVenda || 0).toFixed(2);
+            const estoque = parseFloat(p.Estoque || 0).toFixed(1);
 
             html += `
             <tr>
-                <td>${p.Codigo || ''}</td>
-                <td>${p.CodBarras || item.codigo || ''}</td>
-                <td>${p.TipoCodigo || ''}</td>
-                <td>${p.Descricao || ''}</td>
-                <td>${p.NCM || ''}</td>
-                <td>R$ ${preco}</td>
-                <td>${estoque}</td>
-                <td>${p.Emb || ''}</td>
-                <td>${p.Ativo || ''}</td>
-                <td>${p.CodTrib || ''}</td>
-                <td>${p.ICMS || ''}</td>
-                <td>${p.PisCofins || ''}</td>
-                <td>
-                    ${item.status || ''}<br>
-                    <small>${item.timestamp ? new Date(item.timestamp).toLocaleString('pt-BR') : ''}</small>
+                <td class="col-codigo">${p.Codigo || ''}</td>
+                <td class="col-barras">${p.CodBarras || log.codigo || ''}</td>
+                <td class="col-tipo">${p.TipoCodigo || ''}</td>
+                <td class="col-desc">${p.Descricao || ''}</td>
+                <td class="col-ncm">${p.NCM || ''}</td>
+                <td class="col-preco">R$ ${preco}</td>
+                <td class="col-estoque">${estoque}</td>
+                <td class="col-emb">${p.Emb || ''}</td>
+                <td class="col-ativo">${p.Ativo || ''}</td>
+                <td class="col-trib">${p.CodTrib || ''}</td>
+                <td class="col-icms">${p.ICMS || ''}</td>
+                <td class="col-icms">${p.PisCofins || ''}</td>
+                <td class="col-status">
+                    ${(log.status || '')}<br>
+                    <small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small>
                 </td>
             </tr>`;
         });
@@ -483,12 +541,13 @@ function criarHTMLImpressao(titulo, dados, tabId) {
     html += `
         </tbody>
     </table>
-    <div style="font-size:10px; color:#666; margin-top:10px;">
-        Total de registros: ${dados.length}
+    
+    <div class="footer">
+        Total de registros: ${dados.length} | Gerado pelo Sistema de Gerenciamento de Produtos
     </div>
 </body>
 </html>`;
-
+    
     return html;
 }
 
