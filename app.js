@@ -225,35 +225,50 @@ function carregarDadosTabela(tabId) {
 // Preencher tabela de produtos normais
 function preencherTabelaProdutos(tbody, dados) {
     console.log('Preenchendo tabela de produtos com', dados.length, 'itens');
-
+    
     if (dados.length === 0) {
         const tr = document.createElement('tr');
         tr.innerHTML = '<td colspan="13" style="text-align: center; padding: 20px;">Nenhum produto encontrado</td>';
         tbody.appendChild(tr);
         return;
     }
-
+    
     dados.forEach(log => {
-        // 🔹 Se vier no formato { produto: {...}, status, timestamp }
-        const p = log.produto ? log.produto : log;
+        const p = log.produto || {}; // garante sempre o produto
+
+        // Normaliza valores para evitar "undefined"
+        const codigo = p.Codigo || '';
+        const codBarras = p.CodBarras || log.codigo || '';
+        const tipoCodigo = p.TipoCodigo || '';
+        const descricao = p.Descricao || '';
+        const ncm = p.NCM || '';
+        const preco = p.PrVenda !== undefined ? parseFloat(p.PrVenda || 0).toFixed(2) : '0,00';
+        const estoque = p.Estoque !== undefined ? parseFloat(p.Estoque || 0).toFixed(1) : '0,0';
+        const emb = p.Emb || '';
+        const ativo = p.Ativo || '';
+        const codTrib = p.CodTrib || '';
+        const icms = p.ICMS || '';
+        const pisCofins = p.PisCofins || '';
+        const status = log.status || '';
+        const data = log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : '';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${p.Codigo || ''}</td>
-            <td>${p.CodBarras || log.codigo || ''}</td>
-            <td>${p.TipoCodigo || ''}</td>
-            <td title="${p.Descricao || ''}">${p.Descricao || ''}</td>
-            <td>${p.NCM || ''}</td>
-            <td>R$ ${parseFloat(p.PrVenda || 0).toFixed(2)}</td>
-            <td>${parseFloat(p.Estoque || 0).toFixed(1)}</td>
-            <td>${p.Emb || ''}</td>
-            <td>${p.Ativo || ''}</td>
-            <td>${p.CodTrib || ''}</td>
-            <td>${p.ICMS || ''}</td>
-            <td>${p.PisCofins || ''}</td>
+            <td>${codigo}</td>
+            <td>${codBarras}</td>
+            <td>${tipoCodigo}</td>
+            <td title="${descricao}">${descricao}</td>
+            <td>${ncm}</td>
+            <td>R$ ${preco}</td>
+            <td>${estoque}</td>
+            <td>${emb}</td>
+            <td>${ativo}</td>
+            <td>${codTrib}</td>
+            <td>${icms}</td>
+            <td>${pisCofins}</td>
             <td style="font-size: 11px; color: gray;">
-                ${log.status || ''}<br>
-                <small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small>
+                ${status}<br>
+                <small>${data}</small>
             </td>
         `;
         tbody.appendChild(tr);
