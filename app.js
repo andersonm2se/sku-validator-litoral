@@ -1,3 +1,6 @@
+// Base da API centralizada
+const API_BASE = "https://validator.cavaleiroexpress.com.br";
+
 // Dados da aplicação
 let dadosCompletos = {};
 let dadosCarregados = false;
