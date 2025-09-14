@@ -287,26 +287,31 @@ function preencherTabelaProdutos(tbody, dados) {
     
     if (dados.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="12" style="text-align: center; padding: 20px;">Nenhum produto encontrado</td>';
+        tr.innerHTML = '<td colspan="13" style="text-align: center; padding: 20px;">Nenhum produto encontrado</td>';
         tbody.appendChild(tr);
         return;
     }
     
-    dados.forEach((item, index) => {
+    dados.forEach(log => {
+        const p = log.produto || {}; // produto dentro do log
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${item.Codigo || ''}</td>
-            <td>${item.CodBarras || ''}</td>
-            <td>${item.TipoCodigo || ''}</td>
-            <td title="${item.Descricao || ''}">${item.Descricao || ''}</td>
-            <td>${item.NCM || ''}</td>
-            <td>R$ ${typeof item.PrVenda === 'number' ? parseFloat(item.PrVenda).toFixed(2) : typeof item.PrVenda === 'string' ? parseFloat(item.PrVenda).toFixed(2) : '0,00'}</td>
-            <td>${typeof item.Estoque === 'number' ? item.Estoque.toFixed(1) : '0,0'}</td>
-            <td>${item.Emb || ''}</td>
-            <td>${item.Ativo || ''}</td>
-            <td>${item.CodTrib || ''}</td>
-            <td>${item.ICMS || ''}</td>
-            <td>${item.PisCofins || ''}</td>
+            <td>${p.Codigo || ''}</td>
+            <td>${p.CodBarras || log.codigo || ''}</td>
+            <td>${p.TipoCodigo || ''}</td>
+            <td title="${p.Descricao || ''}">${p.Descricao || ''}</td>
+            <td>${p.NCM || ''}</td>
+            <td>R$ ${parseFloat(p.PrVenda || 0).toFixed(2)}</td>
+            <td>${parseFloat(p.Estoque || 0).toFixed(1)}</td>
+            <td>${p.Emb || ''}</td>
+            <td>${p.Ativo || ''}</td>
+            <td>${p.CodTrib || ''}</td>
+            <td>${p.ICMS || ''}</td>
+            <td>${p.PisCofins || ''}</td>
+            <td style="font-size: 11px; color: gray;">
+                ${log.status || ''}<br>
+                <small>${log.timestamp ? new Date(log.timestamp).toLocaleString('pt-BR') : ''}</small>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -447,6 +452,7 @@ window.imprimirLista = function(tabId) {
 };
 
 // Criar HTML para impressão
+// Criar HTML para impressão
 function criarHTMLImpressao(titulo, dados, tabId) {
     const agora = new Date().toLocaleString('pt-BR');
     
@@ -508,18 +514,19 @@ function criarHTMLImpressao(titulo, dados, tabId) {
         }
         
         /* Larguras específicas das colunas */
-        .col-codigo { width: 7%; }
-        .col-barras { width: 13%; }
-        .col-tipo { width: 8%; }
-        .col-desc { width: 28%; }
-        .col-ncm { width: 8%; }
-        .col-preco { width: 8%; }
+        .col-codigo { width: 6%; }
+        .col-barras { width: 12%; }
+        .col-tipo { width: 7%; }
+        .col-desc { width: 25%; }
+        .col-ncm { width: 7%; }
+        .col-preco { width: 7%; }
         .col-estoque { width: 6%; }
         .col-emb { width: 4%; }
         .col-ativo { width: 5%; }
         .col-trib { width: 5%; }
-        .col-icms { width: 8%; }
-        
+        .col-icms { width: 7%; }
+        .col-status { width: 9%; }
+
         .col-barras-full { width: 100%; }
         
         @media print {
@@ -562,6 +569,7 @@ function criarHTMLImpressao(titulo, dados, tabId) {
                 <th class="col-trib">Cód.Trib</th>
                 <th class="col-icms">ICMS</th>
                 <th class="col-icms">Pis/Cofins</th>
+                <th class="col-status">Status / Data</th>
             </tr>
         </thead>
         <tbody>`;
@@ -586,6 +594,10 @@ function criarHTMLImpressao(titulo, dados, tabId) {
                 <td class="col-trib">${item.CodTrib || ''}</td>
                 <td class="col-icms">${item.ICMS || ''}</td>
                 <td class="col-icms">${item.PisCofins || ''}</td>
+                <td class="col-status">
+                    ${(item.status || '')}<br>
+                    <small>${item.timestamp ? new Date(item.timestamp).toLocaleString('pt-BR') : ''}</small>
+                </td>
             </tr>`;
         });
     }
