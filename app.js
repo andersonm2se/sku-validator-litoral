@@ -75,7 +75,14 @@ async function carregarDadosAPI() {
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
-        // Total
+        // 🔹 Atualiza os contadores do Sistema de Abas
+        document.getElementById("validados-tab-count").textContent = `(${dadosCompletos['validados'].length})`;
+        document.getElementById("sem-trib-tab-count").textContent = `(${dadosCompletos['sem-trib'].length})`;
+        document.getElementById("desativados-tab-count").textContent = `(${dadosCompletos['desativados'].length})`;
+        document.getElementById("sem-preco-tab-count").textContent = `(${dadosCompletos['sem-preco'].length})`;
+        document.getElementById("nao-cadastrados-tab-count").textContent = `(${dadosCompletos['nao-cadastrados'].length})`;
+
+        // 🔹 Total
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
