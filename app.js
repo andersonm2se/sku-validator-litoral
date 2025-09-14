@@ -43,12 +43,10 @@ function carregarDadosIniciais() {
     carregarDadosAPI();      // busca diretamente da API
 }
 
-// Tentar carregar dados reais da API
 async function carregarDadosAPI() {
     try {
         console.log('Tentando carregar dados da API...');
 
-        // 🔹 Carrega todas as rotas em paralelo já usando o domínio HTTPS
         const [validados, semTrib, desativados, semPreco, naoCadastrados] = await Promise.all([
             fetch(`${API_BASE}/logs/validados`).then(r => r.json()),
             fetch(`${API_BASE}/logs/sem-tributacao`).then(r => r.json()),
@@ -57,50 +55,43 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Garante que todos venham no formato { produto, status, timestamp }
+        // 🔹 Normaliza: sempre cria { produto, status, timestamp }
+        function normalizar(lista, statusPadrao) {
+            return lista.map(l => {
+                if (l.produto) {
+                    return {
+                        produto: l.produto,
+                        status: l.status || statusPadrao,
+                        timestamp: l.timestamp || null
+                    };
+                } else {
+                    // caso o backend mande o produto direto
+                    return {
+                        produto: l,
+                        status: statusPadrao,
+                        timestamp: null
+                    };
+                }
+            });
+        }
+
         dadosCompletos = {
-            'validados': validados.map(l => ({
-                produto: l.produto || l, 
-                status: l.status || 'validado', 
-                timestamp: l.timestamp || null
-            })),
-            'sem-trib': semTrib.map(l => ({
-                produto: l.produto || l, 
-                status: l.status || 'sem-trib', 
-                timestamp: l.timestamp || null
-            })),
-            'desativados': desativados.map(l => ({
-                produto: l.produto || l, 
-                status: l.status || 'desativado', 
-                timestamp: l.timestamp || null
-            })),
-            'sem-preco': semPreco.map(l => ({
-                produto: l.produto || l, 
-                status: l.status || 'sem-preco', 
-                timestamp: l.timestamp || null
-            })),
+            'validados': normalizar(validados, 'validado'),
+            'sem-trib': normalizar(semTrib, 'sem tributação'),
+            'desativados': normalizar(desativados, 'desativado'),
+            'sem-preco': normalizar(semPreco, 'sem preço'),
             'nao-cadastrados': naoCadastrados.map(l => l.codigo || l)
         };
 
-        // 🔹 Debug: mostra amostras da estrutura recebida
-        console.log("📦 Estrutura recebida da API:", {
-            validados: dadosCompletos['validados'].slice(0, 2),
-            semTrib: dadosCompletos['sem-trib'].slice(0, 2),
-            desativados: dadosCompletos['desativados'].slice(0, 2),
-            semPreco: dadosCompletos['sem-preco'].slice(0, 2),
-            naoCadastrados: dadosCompletos['nao-cadastrados'].slice(0, 2),
-        });
-
         dadosCarregados = true;
 
-        // 🔹 Atualiza os contadores do Dashboard Geral
+        // Atualiza os contadores
         document.getElementById("validados-count").textContent = dadosCompletos['validados'].length;
         document.getElementById("sem-trib-count").textContent = dadosCompletos['sem-trib'].length;
         document.getElementById("desativados-count").textContent = dadosCompletos['desativados'].length;
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
-        // Total
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
@@ -108,15 +99,17 @@ async function carregarDadosAPI() {
                       dadosCompletos['nao-cadastrados'].length;
         document.getElementById("total-count").textContent = total;
 
-        // 🔹 Recarregar a aba ativa
+        // Recarrega aba ativa
         const abaAtiva = document.querySelector('.tab-button.active')?.getAttribute('data-tab') || 'validados';
         carregarDadosTabela(abaAtiva);
 
         console.log('✅ Dados reais carregados e exibidos');
+
     } catch (error) {
         console.error('❌ Erro ao carregar dados da API:', error);
     }
 }
+
 
 // Inicializar sistema de abas
 function inicializarAbas() {
