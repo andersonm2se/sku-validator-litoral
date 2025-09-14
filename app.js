@@ -30,13 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function carregarDadosIniciais() {
     console.log('Carregando dados iniciais...');
     
-    // Dados fallback para garantir que a aplicação funcione
+    // 🔹 Ajusta para o formato esperado (mantém log completo!)
     dadosCompletos = {
-        'validados': [],
-        'sem-trib': [],
-        'desativados': [],
-        'sem-preco': [],
-        'nao-cadastrados': naoCadastrados
+    'validados': validados,
+    'sem-trib': semTrib,
+    'desativados': desativados,
+    'sem-preco': semPreco,
+    'nao-cadastrados': naoCadastrados
     };
     
     // Gerar dados de exemplo para cada categoria
@@ -132,13 +132,13 @@ async function carregarDadosAPI() {
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
-        // 🔹 Ajusta para o formato esperado pelas tabelas
+        // 🔹 Mantém os LOGS completos (produto + status + timestamp)
         dadosCompletos = {
-            'validados': validados.map(l => l.produto || {}),
-            'sem-trib': semTrib.map(l => l.produto || {}),
-            'desativados': desativados.map(l => l.produto || {}),
-            'sem-preco': semPreco.map(l => l.produto || {}),
-            'nao-cadastrados': naoCadastrados.map(l => l.codigo || '')
+            'validados': validados,
+            'sem-trib': semTrib,
+            'desativados': desativados,
+            'sem-preco': semPreco,
+            'nao-cadastrados': naoCadastrados
         };
 
         dadosCarregados = true;
@@ -150,7 +150,7 @@ async function carregarDadosAPI() {
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
-        // Total
+        // 🔹 Atualiza o total geral
         const total = dadosCompletos['validados'].length +
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
