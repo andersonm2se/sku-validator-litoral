@@ -695,7 +695,7 @@ select.form-control {
     gap: 4px;
 }
 .nt-logo {
-    height: 32px;         /* ajuste a altura como preferir */
+    height: 64px;         /* ajuste a altura como preferir */
     width: auto;
     margin-bottom: 0;
     display: block;
