@@ -1,253 +1,155 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Produtos</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Dashboard de Produtos</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Sistema de Gerenciamento de Produtos</h1>
-            <p class="header-subtitle">Validação de Cadastro, Tritutação e Status</p>
-        </header>
+  <div class="header">
+    <h1>Dashboard de Produtos</h1>
+    <p class="header-subtitle">Gerencie, filtre e imprima listagens dos produtos do sistema</p>
+  </div>
 
-        <!-- Dashboard Geral -->
-        <section class="dashboard">
-            <h2>Dashboard Geral</h2>
-            <div class="dashboard-grid">
-                <div class="dashboard-card total">
-                    <div class="dashboard-card-header">
-                        <h3>Total de Registros</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="total-count">601</span>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card validados">
-                    <div class="dashboard-card-header">
-                        <h3>Validados</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="validados-count">111</span>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card sem-trib">
-                    <div class="dashboard-card-header">
-                        <h3>Sem Tributação</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="sem-trib-count">8</span>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card desativados">
-                    <div class="dashboard-card-header">
-                        <h3>Desativados</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="desativados-count">480</span>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card sem-preco">
-                    <div class="dashboard-card-header">
-                        <h3>Sem Preço de Venda</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="sem-preco-count">2</span>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card nao-cadastrados">
-                    <div class="dashboard-card-header">
-                        <h3>Não Cadastrados</h3>
-                    </div>
-                    <div class="dashboard-card-body">
-                        <span class="dashboard-number" id="nao-cadastrados-count">10</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <div class="dashboard container">
+    <section class="tabs-section">
+      <nav class="tabs-nav">
+        <button class="tab-button active" data-tab="validados">Validados</button>
+        <button class="tab-button" data-tab="sem-trib">Sem Tributação</button>
+        <button class="tab-button" data-tab="desativados">Desativados</button>
+        <button class="tab-button" data-tab="sem-preco">Sem Preço</button>
+        <button class="tab-button" data-tab="nao-cadastrados">Não Cadastrados</button>
+      </nav>
 
-        <!-- Sistema de Abas -->
-        <section class="tabs-section">
-            <div class="tabs-nav">
-                <button class="tab-button active" data-tab="validados">
-                    Validados <span class="tab-count">(111)</span>
-                </button>
-                <button class="tab-button" data-tab="sem-trib">
-                    Sem Tributação <span class="tab-count">(8)</span>
-                </button>
-                <button class="tab-button" data-tab="desativados">
-                    Desativados <span class="tab-count">(480)</span>
-                </button>
-                <button class="tab-button" data-tab="sem-preco">
-                    Sem Preço de Venda <span class="tab-count">(2)</span>
-                </button>
-                <button class="tab-button" data-tab="nao-cadastrados">
-                    Não Cadastrados <span class="tab-count">(10)</span>
-                </button>
-            </div>
+      <div class="tabs-content">
+        <!-- Dropdown global, pode colocar dentro de cada painel se quiser separado por aba-->
+        <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>Lista de Produtos</h3>
+          <div>
+            <label for="itensPorPaginaSelect">Itens por página:</label>
+            <select id="itensPorPaginaSelect" class="form-control">
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
+        </div>
 
-            <div class="tabs-content">
-                <!-- Tab Validados -->
-                <div class="tab-panel active" id="tab-validados">
-                    <div class="tab-header">
-                        <h3>Produtos Validados</h3>
-                        <button class="btn btn--primary print-btn" onclick="imprimirLista('validados')">
-                            Imprimir Lista
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="products-table" id="table-validados">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Cód. Barras</th>
-                                    <th>Tipo Código</th>
-                                    <th>Descrição</th>
-                                    <th>NCM</th>
-                                    <th>Pr. Venda</th>
-                                    <th>Estoque</th>
-                                    <th>Emb</th>
-                                    <th>Ativo</th>
-                                    <th>Cód. Trib</th>
-                                    <th>ICMS</th>
-                                    <th>Pis/Cofins</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-validados">
-                                <!-- Dados serão carregados via JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination-validados"></div>
-                </div>
-
-                <!-- Tab Sem Tributação -->
-                <div class="tab-panel" id="tab-sem-trib">
-                    <div class="tab-header">
-                        <h3>Produtos Sem Tributação</h3>
-                        <button class="btn btn--primary print-btn" onclick="imprimirLista('sem-trib')">
-                            Imprimir Lista
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="products-table" id="table-sem-trib">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Cód. Barras</th>
-                                    <th>Tipo Código</th>
-                                    <th>Descrição</th>
-                                    <th>NCM</th>
-                                    <th>Pr. Venda</th>
-                                    <th>Estoque</th>
-                                    <th>Emb</th>
-                                    <th>Ativo</th>
-                                    <th>Cód. Trib</th>
-                                    <th>ICMS</th>
-                                    <th>Pis/Cofins</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-sem-trib"></tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination-sem-trib"></div>
-                </div>
-
-                <!-- Tab Desativados -->
-                <div class="tab-panel" id="tab-desativados">
-                    <div class="tab-header">
-                        <h3>Produtos Desativados</h3>
-                        <button class="btn btn--primary print-btn" onclick="imprimirLista('desativados')">
-                            Imprimir Lista
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="products-table" id="table-desativados">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Cód. Barras</th>
-                                    <th>Tipo Código</th>
-                                    <th>Descrição</th>
-                                    <th>NCM</th>
-                                    <th>Pr. Venda</th>
-                                    <th>Estoque</th>
-                                    <th>Emb</th>
-                                    <th>Ativo</th>
-                                    <th>Cód. Trib</th>
-                                    <th>ICMS</th>
-                                    <th>Pis/Cofins</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-desativados"></tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination-desativados"></div>
-                </div>
-
-                <!-- Tab Sem Preço -->
-                <div class="tab-panel" id="tab-sem-preco">
-                    <div class="tab-header">
-                        <h3>Produtos Sem Preço de Venda</h3>
-                        <button class="btn btn--primary print-btn" onclick="imprimirLista('sem-preco')">
-                            Imprimir Lista
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="products-table" id="table-sem-preco">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Cód. Barras</th>
-                                    <th>Tipo Código</th>
-                                    <th>Descrição</th>
-                                    <th>NCM</th>
-                                    <th>Pr. Venda</th>
-                                    <th>Estoque</th>
-                                    <th>Emb</th>
-                                    <th>Ativo</th>
-                                    <th>Cód. Trib</th>
-                                    <th>ICMS</th>
-                                    <th>Pis/Cofins</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-sem-preco"></tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination-sem-preco"></div>
-                </div>
-
-                <!-- Tab Não Cadastrados -->
-                <div class="tab-panel" id="tab-nao-cadastrados">
-                    <div class="tab-header">
-                        <h3>Códigos Não Cadastrados</h3>
-                        <button class="btn btn--primary print-btn" onclick="imprimirLista('nao-cadastrados')">
-                            Imprimir Lista
-                        </button>
-                    </div>
-                    <div class="table-container">
-                        <table class="products-table" id="table-nao-cadastrados">
-                            <thead>
-                                <tr>
-                                    <th>Código de Barras</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-nao-cadastrados"></tbody>
-                        </table>
-                    </div>
-                    <div class="pagination" id="pagination-nao-cadastrados"></div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <script src="app.js"></script>
+        <div class="tab-panel active" id="tab-validados">
+          <div class="table-container">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Cód. Barras</th>
+                  <th>Tipo Código</th>
+                  <th>Descrição</th>
+                  <th>NCM</th>
+                  <th>Pr. Venda</th>
+                  <th>Estoque</th>
+                  <th>Emb</th>
+                  <th>Ativo</th>
+                  <th>Cód. Trib</th>
+                  <th>ICMS</th>
+                  <th>Pis/Cofins</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-validados"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination-validados"></div>
+        </div>
+        <div class="tab-panel" id="tab-sem-trib">
+          <div class="table-container">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Cód. Barras</th>
+                  <th>Tipo Código</th>
+                  <th>Descrição</th>
+                  <th>NCM</th>
+                  <th>Pr. Venda</th>
+                  <th>Estoque</th>
+                  <th>Emb</th>
+                  <th>Ativo</th>
+                  <th>Cód. Trib</th>
+                  <th>ICMS</th>
+                  <th>Pis/Cofins</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-sem-trib"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination-sem-trib"></div>
+        </div>
+        <div class="tab-panel" id="tab-desativados">
+          <div class="table-container">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Cód. Barras</th>
+                  <th>Tipo Código</th>
+                  <th>Descrição</th>
+                  <th>NCM</th>
+                  <th>Pr. Venda</th>
+                  <th>Estoque</th>
+                  <th>Emb</th>
+                  <th>Ativo</th>
+                  <th>Cód. Trib</th>
+                  <th>ICMS</th>
+                  <th>Pis/Cofins</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-desativados"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination-desativados"></div>
+        </div>
+        <div class="tab-panel" id="tab-sem-preco">
+          <div class="table-container">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Cód. Barras</th>
+                  <th>Tipo Código</th>
+                  <th>Descrição</th>
+                  <th>NCM</th>
+                  <th>Pr. Venda</th>
+                  <th>Estoque</th>
+                  <th>Emb</th>
+                  <th>Ativo</th>
+                  <th>Cód. Trib</th>
+                  <th>ICMS</th>
+                  <th>Pis/Cofins</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-sem-preco"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination-sem-preco"></div>
+        </div>
+        <div class="tab-panel" id="tab-nao-cadastrados">
+          <div class="table-container">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Código de Barras</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-nao-cadastrados"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination-nao-cadastrados"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
