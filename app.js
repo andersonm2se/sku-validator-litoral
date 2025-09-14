@@ -119,7 +119,7 @@ function carregarDadosIniciais() {
 async function carregarDadosAPI() {
     try {
         console.log('Tentando carregar dados da API...');
-        const response = await fetch('https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/e11201f1abd292e54c049eb66dcc5292/aa41899c-489a-4305-84b6-612d258ac281/9026008d.json');
+        const response = await fetch('/dados_produtos.json');
         
         if (response.ok) {
             const dados = await response.json();
