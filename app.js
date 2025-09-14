@@ -224,7 +224,7 @@ function preencherTabelaProdutos(tbody, dados) {
     }
     
     dados.forEach(log => {
-        const p = log.produto || {}; // produto dentro do log
+        const p = log.produto || {}; // 🔹 produto vem dentro do log
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.Codigo || ''}</td>
