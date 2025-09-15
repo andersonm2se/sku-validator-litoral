@@ -285,7 +285,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--color-background);
+  background-color: #fff;        /* 🔹 branco fixo */
   background-image: url('bkg.png'); 
   background-repeat: no-repeat;
   background-position: left top;
