@@ -780,6 +780,15 @@ select.form-control {
 .dashboard-card.sem-preco .dashboard-number {
     color: rgb(147, 51, 234);
 }
+
+.dashboard-card.sem-preco-trib {
+    background: var(--color-bg-8); /* Ciano */
+    border-color: rgba(8, 145, 178, 0.2);
+}
+.dashboard-card.sem-preco-trib .dashboard-number {
+    color: rgb(8, 145, 178);
+}
+
 .dashboard-card.nao-cadastrados {
     background: var(--color-bg-6);
     border-color: rgba(249, 115, 22, 0.2);
