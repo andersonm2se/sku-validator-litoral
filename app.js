@@ -9,6 +9,7 @@ let paginaAtual = {
     'sem-trib': 1,
     'desativados': 1,
     'sem-preco': 1,
+    'sem-preco-trib': 1,   // 🔹 novo
     'nao-cadastrados': 1
 };
 const itensPorPagina = 30;
@@ -36,6 +37,7 @@ function carregarDadosIniciais() {
         'sem-trib': [],
         'desativados': [],
         'sem-preco': [],
+        'sem-preco-trib': [],   // 🔹 novo
         'nao-cadastrados': []
     };
 
@@ -49,11 +51,12 @@ async function carregarDadosAPI() {
         console.log('Tentando carregar dados da API...');
 
         // 🔹 Carrega todas as rotas em paralelo já usando o domínio HTTPS
-        const [validados, semTrib, desativados, semPreco, naoCadastrados] = await Promise.all([
+        const [validados, semTrib, desativados, semPreco, semPrecoTrib, naoCadastrados] = await Promise.all([
             fetch(`${API_BASE}/logs/validados`).then(r => r.json()),
             fetch(`${API_BASE}/logs/sem-tributacao`).then(r => r.json()),
             fetch(`${API_BASE}/logs/desativados`).then(r => r.json()),
             fetch(`${API_BASE}/logs/sem-prvenda`).then(r => r.json()),
+            fetch(`${API_BASE}/logs/sem-prvenda-semtrib`).then(r => r.json()), // 🔹 novo
             fetch(`${API_BASE}/logs/sem-cadastro`).then(r => r.json())
         ]);
 
@@ -63,6 +66,7 @@ async function carregarDadosAPI() {
             'sem-trib': semTrib,
             'desativados': desativados,
             'sem-preco': semPreco,
+            'sem-preco-trib': semPrecoTrib,  // 🔹 novo
             'nao-cadastrados': naoCadastrados
         };
 
@@ -73,6 +77,7 @@ async function carregarDadosAPI() {
         document.getElementById("sem-trib-count").textContent = dadosCompletos['sem-trib'].length;
         document.getElementById("desativados-count").textContent = dadosCompletos['desativados'].length;
         document.getElementById("sem-preco-count").textContent = dadosCompletos['sem-preco'].length;
+        document.getElementById("sem-preco-trib-count").textContent = dadosCompletos['sem-preco-trib'].length;
         document.getElementById("nao-cadastrados-count").textContent = dadosCompletos['nao-cadastrados'].length;
 
         // Total
@@ -80,6 +85,7 @@ async function carregarDadosAPI() {
                       dadosCompletos['sem-trib'].length +
                       dadosCompletos['desativados'].length +
                       dadosCompletos['sem-preco'].length +
+                      dadosCompletos['sem-preco-trib'].length + // 🔹 novo
                       dadosCompletos['nao-cadastrados'].length;
         document.getElementById("total-count").textContent = total;
 
@@ -88,6 +94,7 @@ async function carregarDadosAPI() {
         document.querySelector('[data-tab="sem-trib"] .tab-count').textContent = `(${dadosCompletos['sem-trib'].length})`;
         document.querySelector('[data-tab="desativados"] .tab-count').textContent = `(${dadosCompletos['desativados'].length})`;
         document.querySelector('[data-tab="sem-preco"] .tab-count').textContent = `(${dadosCompletos['sem-preco'].length})`;
+        document.querySelector('[data-tab="sem-preco-trib"] .tab-count').textContent = `(${dadosCompletos['sem-preco-trib'].length})`;
         document.querySelector('[data-tab="nao-cadastrados"] .tab-count').textContent = `(${dadosCompletos['nao-cadastrados'].length})`;
 
         // 🔹 Recarregar a aba ativa
@@ -343,6 +350,7 @@ window.imprimirLista = function(tabId) {
         'sem-trib': 'Produtos Sem Tributação',
         'desativados': 'Produtos Desativados',
         'sem-preco': 'Produtos Sem Preço de Venda',
+        'sem-preco-trib': 'Produtos Sem Preço e Sem Tributação', // 🔹 novo
         'nao-cadastrados': 'Códigos Não Cadastrados'
     };
     
